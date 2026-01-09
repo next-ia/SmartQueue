@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
-import { Home, Shield, HelpCircle, Menu, X } from 'lucide-react';
+import { Home, Shield, HelpCircle, Menu, X, LayoutDashboard } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Navbar() {
@@ -36,7 +36,6 @@ export default function Navbar() {
 
   const navLinks = [
     { href: '/', label: 'Accueil', icon: Home },
-    { href: '#', label: 'Dashboard', icon: Shield, onClick: handleDashboardAccess },
     { href: '/aide-contact', label: 'Aide/Contact', icon: HelpCircle },
   ];
 
@@ -56,22 +55,22 @@ export default function Navbar() {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-4">
-              {navLinks.map((link) => (
-                <button
-                  key={link.label}
-                  onClick={link.onClick}
-                  className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition ${
-                    link.href !== '#'
-                      ? isActive(link.href)
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'text-gray-600 hover:bg-gray-100'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  <link.icon className="w-4 h-4 mr-2" />
-                  {link.label}
-                </button>
-              ))}
+              <Link href="/" className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition ${isActive('/') ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}>
+                <Home className="w-4 h-4 mr-2" />
+                Accueil
+              </Link>
+              <Link href="/aide-contact" className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition ${isActive('/aide-contact') ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}>
+                <HelpCircle className="w-4 h-4 mr-2" />
+                Aide/Contact
+              </Link>
+              {/* Dashboard Icon Button - Right side */}
+              <button
+                onClick={handleDashboardAccess}
+                className="p-2 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-gray-100 transition"
+                title="Espace Médecin"
+              >
+                <LayoutDashboard className="w-5 h-5" />
+              </button>
             </div>
 
             {/* Mobile menu button */}
@@ -109,6 +108,17 @@ export default function Navbar() {
                   {link.label}
                 </button>
               ))}
+              {/* Mobile Dashboard Button */}
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleDashboardAccess();
+                }}
+                className="w-full flex items-center px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition"
+              >
+                <LayoutDashboard className="w-5 h-5 mr-3" />
+                Espace Médecin
+              </button>
             </div>
           </div>
         )}

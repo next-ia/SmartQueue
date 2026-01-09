@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Patient, QueueEntry } from '@/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Zap, AlertCircle, X, PlusCircle, Loader2, Check } from 'lucide-react';
+import { Zap, AlertCircle, X, PlusCircle, Loader2, Check, AlertTriangle, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -25,6 +25,8 @@ const DashboardSecretaire: React.FC = () => {
   const [modalPatientName, setModalPatientName] = useState('');
   const [modalPatientPhone, setModalPatientPhone] = useState('');
   const [modalLoading, setModalLoading] = useState(false);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const [showAlertModal, setShowAlertModal] = useState(false);
 
   const getPatientData = useCallback((patientId: string) => patients.find((p) => p.id === patientId), [patients]);
 
@@ -95,6 +97,7 @@ const DashboardSecretaire: React.FC = () => {
 
   const handleCancelPatient = async (queueEntryId: string, patientId: string) => {
     console.log('Annulation du patient:', patientId);
+    setPendingAction('cancel-' + queueEntryId);
     
     // Optimistic UI: supprimer immédiatement de l'affichage
     setQueue(prev => prev.filter(entry => entry.id !== queueEntryId));
@@ -102,15 +105,18 @@ const DashboardSecretaire: React.FC = () => {
     const { error: cancelError } = await supabase.from('patients').update({ status: 'cancelled' }).eq('id', patientId);
     if (cancelError) {
       console.error('Erreur lors de l\'annulation:', cancelError.message);
+      setPendingAction(null);
       return;
     }
     const { error: deleteError } = await supabase.from('queue').delete().eq('id', queueEntryId);
     if (deleteError) {
       console.error('Erreur lors de la suppression:', deleteError.message);
+      setPendingAction(null);
       return;
     }
     console.log('Patient annulé, rechargement...')
     setTimeout(() => {
+      setPendingAction(null);
       router.refresh();
       console.log('Rechargement de la page...');
       window.location.reload();
@@ -119,6 +125,7 @@ const DashboardSecretaire: React.FC = () => {
 
   const handleCompletePatient = async (queueEntryId: string, patientId: string) => {
     console.log('Terminaison du patient:', patientId);
+    setPendingAction('complete-' + queueEntryId);
     
     // Optimistic UI: supprimer immédiatement de l'affichage
     setQueue(prev => prev.filter(entry => entry.id !== queueEntryId));
@@ -126,15 +133,18 @@ const DashboardSecretaire: React.FC = () => {
     const { error: completeError } = await supabase.from('patients').update({ status: 'completed' }).eq('id', patientId);
     if (completeError) {
       console.error('Erreur lors de la complétion:', completeError.message);
+      setPendingAction(null);
       return;
     }
     const { error: deleteError } = await supabase.from('queue').delete().eq('id', queueEntryId);
     if (deleteError) {
       console.error('Erreur lors de la suppression:', deleteError.message);
+      setPendingAction(null);
       return;
     }
     console.log('Patient terminé, rechargement...')
     setTimeout(() => {
+      setPendingAction(null);
       router.refresh();
       console.log('Rechargement de la page...');
       window.location.reload();
@@ -182,6 +192,42 @@ const DashboardSecretaire: React.FC = () => {
     }
   };
 
+  const handleAlertStaff = async () => {
+    console.log('Alerte Staff: Début de la procédure de notification WhatsApp');
+    setShowAlertModal(true);
+  };
+
+  const confirmAlertNotification = async () => {
+    console.log('Confirmation: Envoi de notification WhatsApp de suspension temporaire');
+    setShowAlertModal(false);
+    
+    try {
+      // Récupérer tous les patients avec un numéro de téléphone
+      const { data: patientsWithPhone, error: fetchError } = await supabase
+        .from('patients')
+        .select('phone, name')
+        .not('phone', 'is', null);
+
+      if (fetchError) throw fetchError;
+
+      console.log(`Patients à notifier: ${patientsWithPhone?.length || 0}`);
+      
+      // Simulation de l'envoi WhatsApp (intégration WhatsApp API à venir)
+      if (patientsWithPhone && patientsWithPhone.length > 0) {
+        const phoneNumbers = patientsWithPhone.map(p => p.phone).join(', ');
+        console.log('Numéros à notifier:', phoneNumbers);
+        
+        // Ici on intégrerait l'API WhatsApp Business
+        alert(`Alerte envoyée à ${patientsWithPhone.length} patient(s).\n\nMessage: "Bonjour [Nom], nous vous informons d'une suspension temporaire des consultations. Nous vous recontacterons soon. SmartQueue"`);
+      } else {
+        alert('Aucun patient avec numéro de téléphone à notifier.');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération des patients:', error);
+      alert('Erreur lors de l\'envoi des notifications.');
+    }
+  };
+
   const getPatientName = useCallback((patientId: string) => {
     const patient = getPatientData(patientId);
     return patient ? patient.name : 'N/A';
@@ -201,60 +247,106 @@ const DashboardSecretaire: React.FC = () => {
 
   if (showAddModal) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Ajouter un Patient</h2>
-          <form onSubmit={handleAddPatientFromModal} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nom du Patient *</label>
-              <input
-                type="text"
-                value={modalPatientName}
-                onChange={(e) => setModalPatientName(e.target.value)}
-                placeholder="Entrez le nom"
-                required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                autoFocus
-              />
+      <>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Ajouter un Patient</h2>
+            <form onSubmit={handleAddPatientFromModal} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nom du Patient *</label>
+                <input
+                  type="text"
+                  value={modalPatientName}
+                  onChange={(e) => setModalPatientName(e.target.value)}
+                  placeholder="Entrez le nom"
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Téléphone (optionnel)</label>
+                <input
+                  type="tel"
+                  value={modalPatientPhone}
+                  onChange={(e) => setModalPatientPhone(e.target.value)}
+                  placeholder="06 XX XX XX XX"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                />
+              </div>
+              <div className="flex space-x-3 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowAddModal(false);
+                    setModalPatientName('');
+                    setModalPatientPhone('');
+                  }}
+                  className="flex-1"
+                >
+                  Annuler
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={!modalPatientName.trim() || modalLoading}
+                  className={`flex-1 ${PRIMARY_COLOR} ${HOVER_COLOR} text-white`}
+                >
+                  {modalLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    'Valider'
+                  )}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Modal d'alerte staff
+  if (showAlertModal) {
+    return (
+      <>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4">
+            <div className="text-center mb-4">
+              <div className="bg-orange-100 p-3 rounded-full inline-flex mb-3">
+                <AlertTriangle className="w-8 h-8 text-orange-600" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">Alerte Imprévu / Suspension</h3>
+              <p className="text-sm text-gray-500 mt-2">
+                Voulez-vous prévenir tous les patients par WhatsApp d&apos;une suspension temporaire des consultations ?
+              </p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Téléphone (optionnel)</label>
-              <input
-                type="tel"
-                value={modalPatientPhone}
-                onChange={(e) => setModalPatientPhone(e.target.value)}
-                placeholder="06 XX XX XX XX"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-              />
+            <div className="bg-gray-50 p-3 rounded-lg mb-4">
+              <p className="text-sm text-gray-600">
+                Message à envoyer: <br/>
+                <span className="text-gray-800 italic">"Bonjour, nous vous informons d'une suspension temporaire des consultations. Nous vous recontacterons soon. SmartQueue"</span>
+              </p>
             </div>
-            <div className="flex space-x-3 pt-2">
+            <div className="flex space-x-3">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => {
-                  setShowAddModal(false);
-                  setModalPatientName('');
-                  setModalPatientPhone('');
-                }}
+                onClick={() => setShowAlertModal(false)}
                 className="flex-1"
               >
                 Annuler
               </Button>
               <Button
-                type="submit"
-                disabled={!modalPatientName.trim() || modalLoading}
-                className={`flex-1 ${PRIMARY_COLOR} ${HOVER_COLOR} text-white`}
+                onClick={confirmAlertNotification}
+                className="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-bold"
               >
-                {modalLoading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  'Valider'
-                )}
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Envoyer
               </Button>
             </div>
-          </form>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -269,6 +361,14 @@ const DashboardSecretaire: React.FC = () => {
                 <Zap className="w-4 h-4 mr-1"/> Patient Actuel: {nextPatientName}
               </p>
             )}
+            <Button
+              onClick={handleAlertStaff}
+              variant="outline"
+              className="border-orange-500 text-orange-600 hover:bg-orange-50 font-bold"
+            >
+              <AlertTriangle className="w-4 h-4 mr-2" />
+              Alerte Imprévu
+            </Button>
             <Button
               onClick={handleCallNext}
               disabled={queue.length === 0}

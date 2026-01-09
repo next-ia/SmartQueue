@@ -148,7 +148,7 @@ export default function QueuePatientPage() {
   // Affichage de la position dans la file
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center justify-center p-4 font-sans">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden">
+      <div className="max-w-md mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden">
         <div className="bg-blue-600 p-6 text-center">
           <h1 className="text-white text-2xl font-bold mb-1">SmartQueue</h1>
           <p className="text-blue-100 text-sm">Maroc</p>

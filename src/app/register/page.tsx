@@ -11,11 +11,33 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+
+  // Regex pour valider les numéros marocains
+  // Accepte: 06XXXXXXXX, 07XXXXXXXX, +212XXXXXXXXX
+  const validatePhone = (phone: string): boolean => {
+    const cleanedPhone = phone.replace(/\s/g, '');
+    // Format marocain: 06/07 + 8 chiffres OU +212 + 9 chiffres
+    const moroccanPhoneRegex = /^(?:\+212|0)[5-7]\d{8}$/;
+    return moroccanPhoneRegex.test(cleanedPhone);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
 
+    // Validation du téléphone obligatoire
+    if (!phone.trim()) {
+      setPhoneError('Le numéro de téléphone est obligatoire pour être contacté');
+      return;
+    }
+
+    if (!validatePhone(phone)) {
+      setPhoneError('Numéro invalide. Utilisez: 06XXXXXXXX, 07XXXXXXXX ou +212XXXXXXXXX');
+      return;
+    }
+
+    setPhoneError(null);
     setLoading(true);
     setError(null);
 
@@ -104,15 +126,25 @@ export default function RegisterPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 <Phone className="w-4 h-4 inline mr-1" />
-                Téléphone (optionnel)
+                Téléphone <span className="text-red-500">*</span>
               </label>
               <input
                 type="tel"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  setPhoneError(null);
+                }}
                 placeholder="06 XX XX XX XX"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                required
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition ${phoneError ? 'border-red-500' : 'border-gray-300'}`}
               />
+              {phoneError && (
+                <p className="text-red-500 text-sm mt-1 flex items-center">
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  {phoneError}
+                </p>
+              )}
             </div>
 
             <button
