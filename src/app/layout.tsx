@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SmartQueue Maroc - Gestion de file d'attente",
+  title: "SmartQueue Maroc v2 - Gestion de file d'attente",
   description: "Système de gestion de file d'attente pour cabinets médicaux au Maroc",
 };
 
