@@ -91,8 +91,17 @@ const DashboardSecretaire: React.FC = () => {
 
   const handleCancelPatient = async (queueEntryId: string, patientId: string) => {
     console.log('Annulation du patient:', patientId);
-    await supabase.from('patients').update({ status: 'cancelled' }).eq('id', patientId);
-    await supabase.from('queue').delete().eq('id', queueEntryId);
+    const { error: cancelError } = await supabase.from('patients').update({ status: 'cancelled' }).eq('id', patientId);
+    if (cancelError) {
+      console.error('Erreur lors de l\'annulation:', cancelError.message);
+      return;
+    }
+    const { error: deleteError } = await supabase.from('queue').delete().eq('id', queueEntryId);
+    if (deleteError) {
+      console.error('Erreur lors de la suppression:', deleteError.message);
+      return;
+    }
+    console.log('Patient annulé, rafraîchissement...')
     setTimeout(() => {
       fetchData();
       console.log('Données rafraîchies après annulation');
@@ -101,8 +110,17 @@ const DashboardSecretaire: React.FC = () => {
 
   const handleCompletePatient = async (queueEntryId: string, patientId: string) => {
     console.log('Terminaison du patient:', patientId);
-    await supabase.from('patients').update({ status: 'completed' }).eq('id', patientId);
-    await supabase.from('queue').delete().eq('id', queueEntryId);
+    const { error: completeError } = await supabase.from('patients').update({ status: 'completed' }).eq('id', patientId);
+    if (completeError) {
+      console.error('Erreur lors de la complétion:', completeError.message);
+      return;
+    }
+    const { error: deleteError } = await supabase.from('queue').delete().eq('id', queueEntryId);
+    if (deleteError) {
+      console.error('Erreur lors de la suppression:', deleteError.message);
+      return;
+    }
+    console.log('Patient terminé, rafraîchissement...')
     setTimeout(() => {
       fetchData();
       console.log('Données rafraîchies après complétion');
