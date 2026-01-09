@@ -70,6 +70,7 @@ const DashboardSecretaire: React.FC = () => {
     if (queue.length === 0) return;
 
     const nextPatientEntry = queue[0];
+    console.log('Appel du patient:', nextPatientEntry.id);
 
     const { error } = await supabase
       .from('queue')
@@ -79,21 +80,33 @@ const DashboardSecretaire: React.FC = () => {
     if (error) {
       console.error("Erreur lors de la mise à jour du statut:", error.message);
     } else {
-      // Rafraîchir les données après la mise à jour
-      fetchData();
+      console.log('Patient appelé, rafraîchissement...')
+      // Petit délai pour laisser le temps à Supabase de répondre
+      setTimeout(() => {
+        fetchData();
+        console.log('Données rafraîchies');
+      }, 500);
     }
   };
 
   const handleCancelPatient = async (queueEntryId: string, patientId: string) => {
+    console.log('Annulation du patient:', patientId);
     await supabase.from('patients').update({ status: 'cancelled' }).eq('id', patientId);
     await supabase.from('queue').delete().eq('id', queueEntryId);
-    fetchData(); // Rafraîchir après annulation
+    setTimeout(() => {
+      fetchData();
+      console.log('Données rafraîchies après annulation');
+    }, 500);
   };
 
   const handleCompletePatient = async (queueEntryId: string, patientId: string) => {
+    console.log('Terminaison du patient:', patientId);
     await supabase.from('patients').update({ status: 'completed' }).eq('id', patientId);
     await supabase.from('queue').delete().eq('id', queueEntryId);
-    fetchData(); // Rafraîchir après complétion
+    setTimeout(() => {
+      fetchData();
+      console.log('Données rafraîchies après complétion');
+    }, 500);
   };
 
   const handleAddPatientFromModal = async (e: React.FormEvent) => {
