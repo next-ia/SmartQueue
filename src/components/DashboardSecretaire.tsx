@@ -87,9 +87,9 @@ const DashboardSecretaire: React.FC = () => {
       setTimeout(() => {
         fetchData();
         router.refresh();
+        console.log('Rechargement de la page...');
         window.location.reload();
-        console.log('Données rafraîchies');
-      }, 500);
+      }, 1000);
     }
   };
 
@@ -109,9 +109,9 @@ const DashboardSecretaire: React.FC = () => {
     setTimeout(() => {
       fetchData();
       router.refresh();
+      console.log('Rechargement de la page...');
       window.location.reload();
-      console.log('Données rafraîchies après annulation');
-    }, 500);
+    }, 1000);
   };
 
   const handleCompletePatient = async (queueEntryId: string, patientId: string) => {
@@ -130,9 +130,9 @@ const DashboardSecretaire: React.FC = () => {
     setTimeout(() => {
       fetchData();
       router.refresh();
+      console.log('Rechargement de la page...');
       window.location.reload();
-      console.log('Données rafraîchies après complétion');
-    }, 500);
+    }, 1000);
   };
 
   const handleAddPatientFromModal = async (e: React.FormEvent) => {
