@@ -78,17 +78,22 @@ const DashboardSecretaire: React.FC = () => {
     
     if (error) {
       console.error("Erreur lors de la mise à jour du statut:", error.message);
+    } else {
+      // Rafraîchir les données après la mise à jour
+      fetchData();
     }
   };
 
   const handleCancelPatient = async (queueEntryId: string, patientId: string) => {
     await supabase.from('patients').update({ status: 'cancelled' }).eq('id', patientId);
     await supabase.from('queue').delete().eq('id', queueEntryId);
+    fetchData(); // Rafraîchir après annulation
   };
 
   const handleCompletePatient = async (queueEntryId: string, patientId: string) => {
     await supabase.from('patients').update({ status: 'completed' }).eq('id', patientId);
     await supabase.from('queue').delete().eq('id', queueEntryId);
+    fetchData(); // Rafraîchir après complétion
   };
 
   const handleAddPatientFromModal = async (e: React.FormEvent) => {

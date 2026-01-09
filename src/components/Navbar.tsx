@@ -37,7 +37,7 @@ export default function Navbar() {
   const navLinks = [
     { href: '/', label: 'Accueil', icon: Home },
     { href: '#', label: 'Dashboard', icon: Shield, onClick: handleDashboardAccess },
-    { href: '#', label: 'Aide/Contact', icon: HelpCircle, onClick: () => alert('Contact: support@smartqueue.ma') },
+    { href: '/aide-contact', label: 'Aide/Contact', icon: HelpCircle },
   ];
 
   return (
