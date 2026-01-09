@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Patient, QueueEntry } from '@/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -15,6 +16,7 @@ const PRIMARY_COLOR_TEXT = 'text-blue-600';
 const HOVER_COLOR = 'hover:bg-blue-700';
 
 const DashboardSecretaire: React.FC = () => {
+  const router = useRouter();
   const [queue, setQueue] = useState<QueueEntry[]>([]);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [settings, setSettings] = useState<{ average_consultation_time: number } | null>(null);
@@ -84,6 +86,7 @@ const DashboardSecretaire: React.FC = () => {
       // Petit délai pour laisser le temps à Supabase de répondre
       setTimeout(() => {
         fetchData();
+        router.refresh();
         console.log('Données rafraîchies');
       }, 500);
     }
@@ -104,6 +107,7 @@ const DashboardSecretaire: React.FC = () => {
     console.log('Patient annulé, rafraîchissement...')
     setTimeout(() => {
       fetchData();
+      router.refresh();
       console.log('Données rafraîchies après annulation');
     }, 500);
   };
@@ -123,6 +127,7 @@ const DashboardSecretaire: React.FC = () => {
     console.log('Patient terminé, rafraîchissement...')
     setTimeout(() => {
       fetchData();
+      router.refresh();
       console.log('Données rafraîchies après complétion');
     }, 500);
   };
