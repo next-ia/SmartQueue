@@ -87,6 +87,7 @@ const DashboardSecretaire: React.FC = () => {
       setTimeout(() => {
         fetchData();
         router.refresh();
+        window.location.reload();
         console.log('Données rafraîchies');
       }, 500);
     }
@@ -108,6 +109,7 @@ const DashboardSecretaire: React.FC = () => {
     setTimeout(() => {
       fetchData();
       router.refresh();
+      window.location.reload();
       console.log('Données rafraîchies après annulation');
     }, 500);
   };
@@ -128,6 +130,7 @@ const DashboardSecretaire: React.FC = () => {
     setTimeout(() => {
       fetchData();
       router.refresh();
+      window.location.reload();
       console.log('Données rafraîchies après complétion');
     }, 500);
   };
