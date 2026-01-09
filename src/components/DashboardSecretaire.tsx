@@ -95,6 +95,10 @@ const DashboardSecretaire: React.FC = () => {
 
   const handleCancelPatient = async (queueEntryId: string, patientId: string) => {
     console.log('Annulation du patient:', patientId);
+    
+    // Optimistic UI: supprimer immédiatement de l'affichage
+    setQueue(prev => prev.filter(entry => entry.id !== queueEntryId));
+    
     const { error: cancelError } = await supabase.from('patients').update({ status: 'cancelled' }).eq('id', patientId);
     if (cancelError) {
       console.error('Erreur lors de l\'annulation:', cancelError.message);
@@ -105,9 +109,8 @@ const DashboardSecretaire: React.FC = () => {
       console.error('Erreur lors de la suppression:', deleteError.message);
       return;
     }
-    console.log('Patient annulé, rafraîchissement...')
+    console.log('Patient annulé, rechargement...')
     setTimeout(() => {
-      fetchData();
       router.refresh();
       console.log('Rechargement de la page...');
       window.location.reload();
@@ -116,6 +119,10 @@ const DashboardSecretaire: React.FC = () => {
 
   const handleCompletePatient = async (queueEntryId: string, patientId: string) => {
     console.log('Terminaison du patient:', patientId);
+    
+    // Optimistic UI: supprimer immédiatement de l'affichage
+    setQueue(prev => prev.filter(entry => entry.id !== queueEntryId));
+    
     const { error: completeError } = await supabase.from('patients').update({ status: 'completed' }).eq('id', patientId);
     if (completeError) {
       console.error('Erreur lors de la complétion:', completeError.message);
@@ -126,9 +133,8 @@ const DashboardSecretaire: React.FC = () => {
       console.error('Erreur lors de la suppression:', deleteError.message);
       return;
     }
-    console.log('Patient terminé, rafraîchissement...')
+    console.log('Patient terminé, rechargement...')
     setTimeout(() => {
-      fetchData();
       router.refresh();
       console.log('Rechargement de la page...');
       window.location.reload();
