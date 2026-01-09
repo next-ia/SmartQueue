@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Clock, AlertCircle, CheckCircle, Smartphone, MapPin, Bell } from 'lucide-react';
+import RealtimeListener from '@/components/RealtimeListener';
 
 export default function QueuePatientPage() {
   const params = useParams();
@@ -148,6 +149,9 @@ export default function QueuePatientPage() {
   // Affichage de la position dans la file
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center justify-center p-4 font-sans">
+      {/* Composant invisible pour écouter les changements en temps réel */}
+      <RealtimeListener patientId={patientId} />
+      
       <div className="max-w-md mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden">
         <div className="bg-blue-600 p-6 text-center">
           <h1 className="text-white text-2xl font-bold mb-1">SmartQueue</h1>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Patient, QueueEntry } from '@/types';
@@ -9,6 +9,8 @@ import { Zap, AlertCircle, X, PlusCircle, Loader2, Check, AlertTriangle, Message
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { callNextPatient, completePatient, cancelPatient } from '@/app/actions';
+import { QueueController } from './QueueController';
 
 // Couleurs de la charte DA - Bleu Majorelle/Cobalt pour le professionnalisme
 const PRIMARY_COLOR = 'bg-blue-600';
@@ -27,6 +29,7 @@ const DashboardSecretaire: React.FC = () => {
   const [modalLoading, setModalLoading] = useState(false);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const [showAlertModal, setShowAlertModal] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const getPatientData = useCallback((patientId: string) => patients.find((p) => p.id === patientId), [patients]);
 
@@ -369,14 +372,8 @@ const DashboardSecretaire: React.FC = () => {
               <AlertTriangle className="w-4 h-4 mr-2" />
               Alerte Imprévu
             </Button>
-            <Button
-              onClick={handleCallNext}
-              disabled={queue.length === 0}
-              className={`text-white font-bold shadow-md transition duration-300 flex items-center ${queue.length === 0 ? 'bg-gray-400 cursor-not-allowed' : `${PRIMARY_COLOR} ${HOVER_COLOR}`}`}
-            >
-              {loading ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <Zap className="w-5 h-5 mr-2" />} 
-              Appeler le Suivant 
-            </Button>
+            {/* Nouveau QueueController avec Optimistic UI */}
+            <QueueController queue={queue} patients={patients} />
             <Button
               onClick={() => setShowAddModal(true)}
               className={`${PRIMARY_COLOR} ${HOVER_COLOR} text-white font-bold shadow-md transition duration-300 flex items-center`}
