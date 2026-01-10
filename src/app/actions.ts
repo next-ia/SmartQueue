@@ -4,8 +4,66 @@ import { revalidatePath } from "next/cache";
 import { supabase } from "@/lib/supabase";
 
 /**
+ * Server Action pour ajouter un patient via FormData
+ */
+export async function addPatient(formData: FormData) {
+  console.log('Server Action: addPatient');
+
+  const name = formData.get("name") as string;
+  const phone = formData.get("phone") as string;
+
+  if (!name || !name.trim()) {
+    throw new Error("Le nom du patient est requis");
+  }
+
+  try {
+    // Créer le patient
+    const { data: newPatient, error: patientError } = await supabase
+      .from("patients")
+      .insert({ 
+        name: name.trim(), 
+        phone: phone?.trim() || null,
+        status: "waiting"
+      })
+      .select()
+      .single();
+
+    if (patientError) throw patientError;
+    if (!newPatient) throw new Error("Échec de la création du patient");
+
+    // Récupérer le nombre de patients dans la file pour la position
+    const { count } = await supabase
+      .from("queue")
+      .select("*", { count: "exact", head: true });
+
+    const nextPosition = (count || 0) + 1;
+
+    // Ajouter à la file d'attente
+    const { error: queueError } = await supabase
+      .from("queue")
+      .insert({
+        patient_id: newPatient.id,
+        position: nextPosition,
+        estimated_wait_time: nextPosition > 1 ? (nextPosition - 1) * 15 : 0
+      });
+
+    if (queueError) throw queueError;
+
+    console.log('Patient ajouté avec succès:', newPatient.id);
+    
+    // LA CLÉ : Invalider le cache pour mettre à jour l'affichage
+    revalidatePath("/dashboard-secretaire");
+    
+    return { success: true, patientId: newPatient.id };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Erreur inconnue";
+    console.error('Erreur addPatient:', message);
+    throw new Error(message);
+  }
+}
+
+/**
  * Server Action pour appeler le patient suivant
- * Met à jour estimated_wait_time à 0 pour indiquer que le patient est appelé
  */
 export async function callNextPatient(queueId: string) {
   console.log('Server Action: callNextPatient', queueId);
@@ -37,7 +95,6 @@ export async function completePatient(queueId: string, patientId: string) {
   console.log('Server Action: completePatient', queueId, patientId);
 
   try {
-    // Marquer le patient comme terminé
     const { error: patientError } = await supabase
       .from("patients")
       .update({ status: "completed", updated_at: new Date().toISOString() })
@@ -45,7 +102,6 @@ export async function completePatient(queueId: string, patientId: string) {
 
     if (patientError) throw patientError;
 
-    // Supprimer de la file d'attente
     const { error: queueError } = await supabase
       .from("queue")
       .delete()
@@ -70,7 +126,6 @@ export async function cancelPatient(queueId: string, patientId: string) {
   console.log('Server Action: cancelPatient', queueId, patientId);
 
   try {
-    // Marquer le patient comme annulé
     const { error: patientError } = await supabase
       .from("patients")
       .update({ status: "cancelled", updated_at: new Date().toISOString() })
@@ -78,7 +133,6 @@ export async function cancelPatient(queueId: string, patientId: string) {
 
     if (patientError) throw patientError;
 
-    // Supprimer de la file d'attente
     const { error: queueError } = await supabase
       .from("queue")
       .delete()

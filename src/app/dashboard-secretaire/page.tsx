@@ -1,5 +1,12 @@
 import DashboardSecretaire from '@/components/DashboardSecretaire';
+import RealtimeListener from '@/components/RealtimeListener';
 
 export default function DashboardPage() {
-  return <DashboardSecretaire />;
+  return (
+    <>
+      {/* RealtimeListener pour sync en temps réel sur le dashboard */}
+      <RealtimeListener patientId="dashboard" />
+      <DashboardSecretaire />
+    </>
+  );
 }
