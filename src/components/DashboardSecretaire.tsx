@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { callNextPatient, completePatient, cancelPatient } from '@/app/actions';
-import { QueueController } from './QueueController';
+import QueueController from './QueueController';
 
 // Couleurs de la charte DA - Bleu Majorelle/Cobalt pour le professionnalisme
 const PRIMARY_COLOR = 'bg-blue-600';
