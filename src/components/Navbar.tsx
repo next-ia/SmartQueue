@@ -90,23 +90,19 @@ export default function Navbar() {
           <div className="md:hidden bg-white border-t">
             <div className="px-4 py-3 space-y-2">
               {navLinks.map((link) => (
-                <button
+                <Link
                   key={link.label}
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    link.onClick?.();
-                  }}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
                   className={`w-full flex items-center px-4 py-3 rounded-lg text-sm font-medium transition ${
-                    link.href !== '#'
-                      ? isActive(link.href)
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'text-gray-600 hover:bg-gray-100'
+                    isActive(link.href)
+                      ? 'bg-blue-100 text-blue-700'
                       : 'text-gray-600 hover:bg-gray-100'
                   }`}
                 >
                   <link.icon className="w-5 h-5 mr-3" />
                   {link.label}
-                </button>
+                </Link>
               ))}
               {/* Mobile Dashboard Button */}
               <button
