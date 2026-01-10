@@ -27,26 +27,25 @@ export default async function QueuePatientPage({ params }: { params: { id: strin
   // Si pas dans la file et pas en attente
   if (!queueData && patientStatus !== 'waiting') {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <div className="max-w-[450px] w-full bg-white rounded-3xl shadow-2xl overflow-hidden p-8 text-center">
+      <main className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-[450px] bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/50 overflow-hidden p-8 text-center">
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-10 h-10 text-green-600" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Merci {patientName} !</h1>
           <p className="text-gray-600">Votre passage est terminé.</p>
         </div>
-      </div>
+      </main>
     );
   }
 
   // Si le patient est appelé (estimated_wait_time = 0)
   if (queueData && queueData.estimated_wait_time === 0) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        {/* RealtimeListener pour sync en temps réel */}
+      <main className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <RealtimeListener patientId={patientId} />
         
-        <div className="max-w-[450px] w-full bg-white rounded-3xl shadow-2xl overflow-hidden">
+        <div className="w-full max-w-[450px] bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/50 overflow-hidden">
           <div className="bg-yellow-400 p-8 text-center">
             <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
               <Bell className="w-10 h-10 text-yellow-600" />
@@ -58,7 +57,7 @@ export default async function QueuePatientPage({ params }: { params: { id: strin
             <p className="text-lg font-medium text-gray-700">Le médecin vous attend</p>
           </div>
         </div>
-      </div>
+      </main>
     );
   }
 
@@ -67,12 +66,11 @@ export default async function QueuePatientPage({ params }: { params: { id: strin
   const estimatedWait = queueData?.estimated_wait_time || 0;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans">
-      {/* RealtimeListener pour sync en temps réel */}
+    <main className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <RealtimeListener patientId={patientId} />
       
-      <div className="max-w-[450px] w-full bg-white rounded-3xl shadow-2xl overflow-hidden">
-        {/* Header style Apple Health */}
+      <div className="w-full max-w-[450px] bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/50 overflow-hidden">
+        {/* Header */}
         <div className="bg-blue-600 p-6 text-center">
           <h1 className="text-white text-2xl font-bold">SmartQueue</h1>
           <p className="text-blue-100 text-sm">Maroc</p>
@@ -89,7 +87,7 @@ export default async function QueuePatientPage({ params }: { params: { id: strin
           <p className="text-gray-600 mb-8">Bienvenue, {patientName}</p>
 
           {/* Position principale - Style Apple Health */}
-          <div className="w-full bg-blue-50 rounded-3xl p-8 text-center mb-6">
+          <div className="w-full bg-blue-50 rounded-[2rem] p-8 text-center mb-6">
             <p className="text-blue-800 text-sm font-medium uppercase tracking-widest mb-2">
               Votre Position
             </p>
@@ -126,6 +124,6 @@ export default async function QueuePatientPage({ params }: { params: { id: strin
           <p className="text-slate-500 text-sm">Cabinet Médical SmartQueue</p>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
